@@ -333,16 +333,16 @@ EMAIL_HOST_PASSWORD = 'oygy vfsv vnlp abts'
 
 ---
 ## Tests unitaires
-# 1. Installer pytest et pytest-django
+1. Installer pytest et pytest-django
 pip install pytest-django pytest
 
-# 2. Créer le fichier de test
+2. Créer le fichier de test
 New-Item tests.py
 
-# 3. Ajouter les fichiers au git
+3. Ajouter les fichiers au git
 git add tests.py pytest.ini
 
-# 4. Exécuter les tests
+4. Exécuter les tests
 pytest tests.py -v
 Configuration Pytest (pytest.ini) :
 
