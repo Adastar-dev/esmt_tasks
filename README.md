@@ -333,6 +333,7 @@ EMAIL_HOST_PASSWORD = 'oygy vfsv vnlp abts'
 
 ---
 ## Tests unitaires
+```bash
 # Installer pytest et pytest-django
 pip install pytest-django pytest
 
@@ -345,6 +346,7 @@ git add tests.py pytest.ini
 # Exécuter les tests
 pytest tests.py -v
 Configuration Pytest (pytest.ini) :
+```bash
 
 
 ---
