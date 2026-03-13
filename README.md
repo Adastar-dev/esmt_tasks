@@ -200,6 +200,111 @@ npm run dev
 
 ---
 
+## 🗃️ Modèles de Données
+
+### User (accounts/models.py)
+| Champ    | Type         | Description                  |
+|----------|--------------|------------------------------|
+| username | CharField    | Nom d'utilisateur unique     |
+| email    | EmailField   | Adresse email                |
+| password | CharField    | Mot de passe hashé           |
+| role     | CharField    | `etudiant` ou `professeur`   |
+| avatar   | ImageField   | Photo de profil (optionnel)  |
+
+### Project (projects/models.py)
+| Champ         | Type                  | Description             |
+|---------------|-----------------------|-------------------------|
+| id            | AutoField             | Identifiant unique      |
+| titre         | CharField(200)        | Titre du projet         |
+| description   | TextField             | Description             |
+| createur      | ForeignKey(User)      | Créateur du projet      |
+| membres       | ManyToManyField(User) | Membres du projet       |
+| date_creation | DateTimeField         | Date de création (auto) |
+
+### Task (tasks/models.py)
+| Champ           | Type                | Description                    |
+|-----------------|---------------------|--------------------------------|
+| id              | AutoField           | Identifiant unique             |
+| titre           | CharField(200)      | Titre de la tâche              |
+| description     | TextField           | Description (optionnel)        |
+| projet          | ForeignKey(Project) | Projet associé                 |
+| assignee        | ForeignKey(User)    | Membre assigné (optionnel)     |
+| statut          | CharField           | `todo`, `en_cours`, `termine`  |
+| priorite        | CharField           | `basse`, `moyenne`, `haute`    |
+| date_limite     | DateField           | Deadline (optionnel)           |
+| date_creation   | DateTimeField       | Date de création (auto)        |
+| date_fin_reelle | DateTimeField       | Date de fin réelle (optionnel) |
+
+### Message (chat/models.py)
+| Champ      | Type                |  Description        |
+|------------|---------------------|---------------------|
+| id         | AutoField           | Identifiant unique  |
+| projet     | ForeignKey(Project) | Projet associé      |
+| auteur     | ForeignKey(User)    | Auteur du message   |
+| contenu    | TextField           | Contenu du message  |
+| date_envoi | DateTimeField       | Date d'envoi (auto) |
+
+---
+
+## 📡 Exemples de Réponses API
+
+**POST `/api/auth/login/`**
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "user": { "id": 1, "username": "prof_ada", "role": "professeur" }
+}
+```
+
+**GET `/api/projets/`**
+```json
+[
+  {
+    "id": 1,
+    "titre": "Développement Application Mobile",
+    "description": "Projet de développement d'une app mobile",
+    "createur": 1,
+    "membres": [1, 2, 3],
+    "date_creation": "2026-01-15T10:00:00Z"
+  }
+]
+```
+
+**GET `/api/projets/1/taches/`**
+```json
+[
+  {
+    "id": 1,
+    "titre": "Maquette UI",
+    "statut": "en_cours",
+    "priorite": "haute",
+    "assignee": 2,
+    "date_limite": "2026-03-01"
+  }
+]
+```
+
+**GET `/api/statistiques/`**
+```json
+[
+  {
+    "projet": "Développement Application Mobile",
+    "total_taches": 5,
+    "terminees_in_delais": 4,
+    "taux": 80.0,
+    "prime": 0
+  }
+]
+```
+
+**WebSocket `ws://127.0.0.1:8000/ws/chat/<projet_id>/`**
+```json
+{ "message": "Bonjour !", "username": "prof_ada" }
+```
+
+
+
 ## 🎨 Design
 
 - **Couleur principale** : `#c9547a` (rose)
@@ -220,8 +325,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'ton_email@gmail.com'
-EMAIL_HOST_PASSWORD = 'ton_app_password_google'
+EMAIL_HOST_USER = 'an7983588@gmail.com'
+EMAIL_HOST_PASSWORD = 'oygy vfsv vnlp abts'
 ```
 
 ---
