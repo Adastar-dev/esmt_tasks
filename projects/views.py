@@ -33,11 +33,14 @@ def projet_detail(request, pk):
 
     statut_actif = request.GET.get('statut', '')
     priorite_actif = request.GET.get('priorite', '')
+    assignee_actif = request.GET.get('assignee', '')
 
     if statut_actif:
         taches = taches.filter(statut=statut_actif)
     if priorite_actif:
         taches = taches.filter(priorite=priorite_actif)
+    if assignee_actif:
+        taches = taches.filter(assignee__pk=assignee_actif)
 
     statuts = [
         ('', 'Tous'),
@@ -59,6 +62,7 @@ def projet_detail(request, pk):
         'priorites': priorites,
         'statut_actif': statut_actif,
         'priorite_actif': priorite_actif,
+        'assignee_actif': assignee_actif,
     })
 
 @login_required

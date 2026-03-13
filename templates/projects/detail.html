@@ -28,7 +28,7 @@
     <a href="{% url 'chat_projet' projet.pk %}" class="btn btn-info btn-sm">
         💬 Chat
     </a>
-</div>
+    </div>
 </div>
 
 <div class="card" style="margin-bottom:28px;">
@@ -40,7 +40,7 @@
 </div>
 
 <form method="GET" style="display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
-    <span style="color:#aaa; fontSize:0.85rem; font-weight:500;">🔍 Filtrer :</span>
+    <span style="color:#aaa; font-size:0.85rem; font-weight:500;">🔍 Filtrer :</span>
 
     {% for s, label in statuts %}
     <button type="submit" name="statut" value="{{ s }}"
@@ -64,7 +64,21 @@
     </button>
     {% endfor %}
 
-    {% if statut_actif or priorite_actif %}
+    <div style="width:1px; height:20px; background:#f0d6e4;"></div>
+
+    <select name="assignee" onchange="this.form.submit()"
+        style="padding:5px 14px; border-radius:20px; border:1.5px solid #fce8f0;
+        font-size:0.8rem; font-weight:500; background:#fff; color:#c9547a;
+        cursor:pointer; font-family:Poppins,sans-serif;">
+        <option value="">👤 Tous les membres</option>
+        {% for membre in projet.membres.all %}
+        <option value="{{ membre.pk }}" {% if assignee_actif == membre.pk|stringformat:"s" %}selected{% endif %}>
+            {{ membre.username }}
+        </option>
+        {% endfor %}
+    </select>
+
+    {% if statut_actif or priorite_actif or assignee_actif %}
     <a href="{% url 'projet_detail' projet.pk %}"
         style="padding:5px 14px; border-radius:20px; background:#f5f5f5;
         color:#888; font-size:0.8rem; text-decoration:none;">
@@ -72,6 +86,7 @@
     </a>
     {% endif %}
 </form>
+
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <h4 style="font-weight:600;">Tâches <span style="color:#c9547a;">({{ projet.taches.count }})</span></h4>
     {% if request.user == projet.createur %}
@@ -92,14 +107,14 @@
                 {% else %}badge-gray{% endif %}">
                 {{ tache.get_statut_display }}
             </span>
-                    <span style="
-            font-size:0.75rem; padding:2px 8px; border-radius:20px;
-            background: {% if tache.priorite == 'haute' %}#fff0f3{% elif tache.priorite == 'moyenne' %}#fff3e0{% else %}#e8f5e9{% endif %};
-            color: {% if tache.priorite == 'haute' %}#e05a7a{% elif tache.priorite == 'moyenne' %}#e08a00{% else %}#4caf50{% endif %};">
-            {% if tache.priorite == 'haute' %}🔴 Haute
-            {% elif tache.priorite == 'moyenne' %}🟡 Moyenne
-            {% else %}🟢 Basse{% endif %}
-        </span>
+            <span style="
+                font-size:0.75rem; padding:2px 8px; border-radius:20px;
+                background: {% if tache.priorite == 'haute' %}#fff0f3{% elif tache.priorite == 'moyenne' %}#fff3e0{% else %}#e8f5e9{% endif %};
+                color: {% if tache.priorite == 'haute' %}#e05a7a{% elif tache.priorite == 'moyenne' %}#e08a00{% else %}#4caf50{% endif %};">
+                {% if tache.priorite == 'haute' %}🔴 Haute
+                {% elif tache.priorite == 'moyenne' %}🟡 Moyenne
+                {% else %}🟢 Basse{% endif %}
+            </span>
         </div>
         <p style="color:#bbb; font-size:0.85rem; margin-bottom:12px;">
             {{ tache.description|truncatechars:60 }}
@@ -136,11 +151,11 @@
         </div>
         {% endif %}
     </div>
-    {% empty %}
+{% empty %}
     <div style="grid-column:1/-1; text-align:center; padding:40px; color:#ccc;">
         <div style="font-size:2.5rem; margin-bottom:12px;">📋</div>
         <p>Aucune tâche pour ce projet.</p>
     </div>
-    {% endfor %}
+{% endfor %}
 </div>
 {% endblock %}
