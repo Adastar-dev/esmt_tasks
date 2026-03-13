@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 32px;">
+    <h2 style="font-size:1.8rem; font-weight:700; color:#333;">
+        Bonjour, {{ user.first_name|default:user.username }} 🌸
+    </h2>
+    {% if alertes_retard %}
+<div style="background:#fff0f3; border-left:4px solid #e05a7a; border-radius:12px;
+    padding:16px 20px; margin-bottom:20px;">
+    <strong style="color:#e05a7a;">🚨 {{ alertes_retard.count }} tâche(s) en retard !</strong>
+    <ul style="margin:8px 0 0; padding-left:20px;">
+        {% for t in alertes_retard %}
+        <li style="color:#666; font-size:0.85rem;">
+            <strong>{{ t.titre }}</strong> —
+            <a href="{% url 'projet_detail' t.projet.pk %}" style="color:#c9547a;">
+                {{ t.projet.titre }}
+            </a>
+            ({{ t.date_limite|date:"d/m/Y" }})
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if alertes_proche %}
+<div style="background:#fff8e1; border-left:4px solid #e08a00; border-radius:12px;
+    padding:16px 20px; margin-bottom:20px;">
+    <strong style="color:#e08a00;">⏰ {{ alertes_proche.count }} tâche(s) arrivent à échéance bientôt !</strong>
+    <ul style="margin:8px 0 0; padding-left:20px;">
+        {% for t in alertes_proche %}
+        <li style="color:#666; font-size:0.85rem;">
+            <strong>{{ t.titre }}</strong> —
+            <a href="{% url 'projet_detail' t.projet.pk %}" style="color:#c9547a;">
+                {{ t.projet.titre }}
+            </a>
+            ({{ t.date_limite|date:"d/m/Y" }})
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+    <p style="color:#aaa; font-size:0.9rem;">Bienvenue sur votre tableau de bord</p>
+</div>
+
+<div class="grid-4" style="margin-bottom:40px;">
+    <div class="stat-card">
+        <div class="stat-number">{{ projets.count }}</div>
+        <div class="stat-label">Projets</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ user.taches_assignees.count }}</div>
+        <div class="stat-label">Mes Tâches</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" style="font-size:1.4rem;">
+            {% if user.role == 'professeur' %}👩‍🏫{% else %}👩‍🎓{% endif %}
+        </div>
+        <div class="stat-label">{{ user.get_role_display }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" style="color:#f39f18;">🏆</div>
+        <div class="stat-label">Primes</div>
+    </div>
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h4 style="font-weight:600; color:#333;">Projets récents</h4>
+    <a href="{% url 'projet_create' %}" class="btn btn-primary btn-sm">+ Nouveau Projet</a>
+</div>
+
+<div class="grid-3">
+    {% for projet in projets %}
+    <div class="card">
+        <h5 style="font-weight:600; margin-bottom:8px;">{{ projet.titre }}</h5>
+        <p style="color:#aaa; font-size:0.85rem; margin-bottom:16px;">
+            {{ projet.description|truncatechars:80 }}
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <small style="color:#ccc;">📋 {{ projet.taches.count }} tâches</small>
+            <a href="{% url 'projet_detail' projet.pk %}" class="btn btn-outline btn-sm">Voir →</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1; text-align:center; padding:60px; color:#ccc;">
+        <div style="font-size:3rem; margin-bottom:16px;">🌸</div>
+        <p>Aucun projet pour l'instant.</p>
+        <a href="{% url 'projet_create' %}" class="btn btn-primary" style="margin-top:12px;">
+            Créer mon premier projet
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Mes Projets{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-project-diagram me-2"></i>Mes Projets</h2>
+    <a href="{% url 'projet_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Nouveau Projet
+    </a>
+</div>
+
+<div class="row">
+    {% for projet in projets %}
+    <div class="col-md-4 mb-3">
+        <div class="card p-3">
+            <h5>{{ projet.titre }}</h5>
+            <p class="text-muted small">{{ projet.description|truncatechars:80 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    <i class="fas fa-tasks me-1"></i>{{ projet.taches.count }} tâches
+                </small>
+                <a href="{% url 'projet_detail' projet.pk %}" class="btn btn-outline-primary btn-sm">
+                    Voir <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Aucun projet. <a href="{% url 'projet_create' %}">Créer votre premier projet !</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

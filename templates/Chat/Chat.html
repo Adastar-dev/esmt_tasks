@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Chat — {{ projet.titre }}{% endblock %}
+
+{% block extra_head %}
+<style>
+.messages-container {
+    height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    background: #fdf6f9;
+    border-radius: 12px;
+    border: 1px solid #fce8f0;
+    margin-bottom: 16px;
+}
+.message-bubble {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+.message-bubble.moi { align-items: flex-end; }
+.message-bubble.autre { align-items: flex-start; }
+.bubble-content {
+    padding: 8px 14px;
+    border-radius: 16px;
+    max-width: 70%;
+    font-size: 0.88rem;
+}
+.moi .bubble-content {
+    background: linear-gradient(135deg, #e8748a, #c9547a);
+    color: white;
+    border-radius: 16px 16px 4px 16px;
+}
+.autre .bubble-content {
+    background: white;
+    color: #333;
+    border: 1px solid #fce8f0;
+    border-radius: 16px 16px 16px 4px;
+}
+.bubble-meta {
+    font-size: 0.72rem;
+    color: #aaa;
+    margin-top: 3px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <div>
+        <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:4px;">
+            💬 Chat — {{ projet.titre }}
+        </h2>
+        <small style="color:#aaa;" id="status">🔴 Connexion...</small>
+    </div>
+    <a href="{% url 'projet_detail' projet.pk %}" class="btn btn-outline-rose">
+        ← Retour
+    </a>
+</div>
+
+<div class="card" style="padding:24px;">
+    <div class="messages-container" id="messages">
+        {% for msg in messages_anciens %}
+        <div class="message-bubble {% if msg.auteur == request.user %}moi{% else %}autre{% endif %}">
+            {% if msg.auteur != request.user %}
+            <span style="font-size:0.75rem; color:#c9547a; font-weight:600; margin-bottom:2px;">
+                {{ msg.auteur.username }}
+            </span>
+            {% endif %}
+            <div class="bubble-content">{{ msg.contenu }}</div>
+            <span class="bubble-meta">
+                {{ msg.date_envoi|date:"H:i" }}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="display:flex; gap:12px;">
+        <input id="message-input" type="text" placeholder="Écrire un message..."
+            class="input-esmt" style="flex:1;"
+            onkeypress="if(event.key==='Enter') envoyerMessage()">
+        <button onclick="envoyerMessage()" class="btn-rose">
+            Envoyer →
+        </button>
+    </div>
+</div>
+
+<script>
+const projetId = {{ projet.pk }};
+const username = "{{ request.user.username }}";
+const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${projetId}/`);
+
+ws.onopen = () => {
+    document.getElementById('status').textContent = '🟢 Connecté';
+};
+
+ws.onclose = () => {
+    document.getElementById('status').textContent = '🔴 Déconnecté';
+};
+
+ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    ajouterMessage(data.username, data.message, data.username === username);
+};
+
+function ajouterMessage(auteur, contenu, estMoi) {
+    const container = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = `message-bubble ${estMoi ? 'moi' : 'autre'}`;
+    div.innerHTML = `
+        ${!estMoi ? `<span style="font-size:0.75rem; color:#c9547a; font-weight:600; margin-bottom:2px;">${auteur}</span>` : ''}
+        <div class="bubble-content">${contenu}</div>
+        <span class="bubble-meta">À l'instant</span>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function envoyerMessage() {
+    const input = document.getElementById('message-input');
+    const message = input.value.trim();
+    if (!message) return;
+    ws.send(JSON.stringify({ message, username }));
+    input.value = '';
+}
+
+// Scroll en bas au chargement
+window.onload = () => {
+    const container = document.getElementById('messages');
+    container.scrollTop = container.scrollHeight;
+};
+</script>
+{% endblock %}

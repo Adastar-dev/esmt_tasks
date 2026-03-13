@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Kanban — {{ projet.titre }}{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+    <div>
+        <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:4px;">
+            🗂️ Kanban — {{ projet.titre }}
+        </h2>
+        <small style="color:#aaa;">{{ projet.taches.count }} tâche(s) au total</small>
+    </div>
+    <a href="{% url 'projet_detail' projet.pk %}" class="btn btn-outline-rose">
+        ← Vue liste
+    </a>
+</div>
+
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+
+    {% for col in colonne_data %}
+    <div>
+        <!-- Header colonne -->
+        <div style="display:flex; justify-content:space-between; align-items:center;
+            padding:12px 16px; border-radius:12px; margin-bottom:16px;
+            background:{{ col.bg }};">
+            <span style="font-weight:600; color:{{ col.color }};">
+                {{ col.emoji }} {{ col.titre }}
+            </span>
+            <span style="background:white; color:{{ col.color }};
+                padding:2px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;">
+                {{ col.taches|length }}
+            </span>
+        </div>
+
+        <!-- Tâches -->
+        {% for tache in col.taches %}
+        <div class="card" style="margin-bottom:10px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <h6 style="font-weight:600; font-size:0.9rem; margin:0;">{{ tache.titre }}</h6>
+                <span style="font-size:0.72rem; padding:2px 8px; border-radius:20px;
+                    background:{% if tache.priorite == 'haute' %}#fff0f3{% elif tache.priorite == 'moyenne' %}#fff3e0{% else %}#e8f5e9{% endif %};
+                    color:{% if tache.priorite == 'haute' %}#e05a7a{% elif tache.priorite == 'moyenne' %}#e08a00{% else %}#4caf50{% endif %};">
+                    {% if tache.priorite == 'haute' %}🔴{% elif tache.priorite == 'moyenne' %}🟡{% else %}🟢{% endif %}
+                    {{ tache.get_priorite_display }}
+                </span>
+            </div>
+            {% if tache.description %}
+            <p style="color:#bbb; font-size:0.8rem; margin-bottom:8px;">
+                {{ tache.description|truncatechars:60 }}
+            </p>
+            {% endif %}
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                {% if tache.assignee %}
+                <small style="color:#c9547a;">👤 {{ tache.assignee.username }}</small>
+                {% endif %}
+                {% if tache.date_limite %}
+                <small style="color:{% if tache.date_limite < today and tache.statut != 'termine' %}#e05a7a{% else %}#aaa{% endif %};">
+                    ⏰ {{ tache.date_limite|date:"d/m/Y" }}
+                </small>
+                {% endif %}
+            </div>
+            {% if request.user == projet.createur %}
+            <form method="POST" action="{% url 'tache_statut' tache.pk %}" style="margin-top:10px;">
+                {% csrf_token %}
+                <select name="statut" style="width:100%; font-size:0.82rem;" onchange="this.form.submit()">
+                    <option value="todo" {% if tache.statut == 'todo' %}selected{% endif %}>À faire</option>
+                    <option value="en_cours" {% if tache.statut == 'en_cours' %}selected{% endif %}>En cours</option>
+                    <option value="termine" {% if tache.statut == 'termine' %}selected{% endif %}>Terminé</option>
+                </select>
+            </form>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div style="text-align:center; padding:32px 16px; color:#ddd; font-size:0.85rem;
+            border:2px dashed #fce8f0; border-radius:16px;">
+            {{ col.emoji }} Aucune tâche
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}{{ projet.titre }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:24px;">
+    <h2 style="font-size:1.8rem; font-weight:700; color:#333; margin-bottom:8px;">
+        📁 {{ projet.titre }}
+    </h2>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    {% if request.user == projet.createur %}
+    <a href="{% url 'projet_edit' projet.pk %}" class="btn btn-warning btn-sm">
+        <i class="fas fa-edit"></i> Modifier
+    </a>
+    <a href="{% url 'projet_membres' projet.pk %}" class="btn btn-info btn-sm">
+        <i class="fas fa-users"></i> Membres
+    </a>
+    <a href="{% url 'projet_kanban' projet.pk %}" class="btn btn-info btn-sm">
+        🗂️ Kanban
+    </a>
+    <form method="POST" action="{% url 'projet_delete' projet.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-sm"
+            onclick="return confirm('Supprimer ce projet ?')">
+            <i class="fas fa-trash"></i> Supprimer
+        </button>
+    </form>
+    {% endif %}
+    <a href="{% url 'chat_projet' projet.pk %}" class="btn btn-info btn-sm">
+        💬 Chat
+    </a>
+</div>
+</div>
+
+<div class="card" style="margin-bottom:28px;">
+    <p style="color:#666; margin-bottom:8px;">{{ projet.description|default:"Aucune description." }}</p>
+    <small style="color:#aaa;">
+        Créé par <strong style="color:#c9547a;">{{ projet.createur.username }}</strong>
+        — {{ projet.date_creation|date:"d/m/Y" }}
+    </small>
+</div>
+
+<form method="GET" style="display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
+    <span style="color:#aaa; fontSize:0.85rem; font-weight:500;">🔍 Filtrer :</span>
+
+    {% for s, label in statuts %}
+    <button type="submit" name="statut" value="{{ s }}"
+        style="padding:5px 14px; border-radius:20px; border:none; cursor:pointer;
+        font-size:0.8rem; font-weight:500;
+        background:{% if statut_actif == s %}#c9547a{% else %}#fce8f0{% endif %};
+        color:{% if statut_actif == s %}white{% else %}#c9547a{% endif %};">
+        {{ label }}
+    </button>
+    {% endfor %}
+
+    <div style="width:1px; height:20px; background:#f0d6e4;"></div>
+
+    {% for p, label in priorites %}
+    <button type="submit" name="priorite" value="{{ p }}"
+        style="padding:5px 14px; border-radius:20px; border:none; cursor:pointer;
+        font-size:0.8rem; font-weight:500;
+        background:{% if priorite_actif == p %}#e08a00{% else %}#fff3e0{% endif %};
+        color:{% if priorite_actif == p %}white{% else %}#e08a00{% endif %};">
+        {{ label }}
+    </button>
+    {% endfor %}
+
+    {% if statut_actif or priorite_actif %}
+    <a href="{% url 'projet_detail' projet.pk %}"
+        style="padding:5px 14px; border-radius:20px; background:#f5f5f5;
+        color:#888; font-size:0.8rem; text-decoration:none;">
+        ✕ Reset
+    </a>
+    {% endif %}
+</form>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h4 style="font-weight:600;">Tâches <span style="color:#c9547a;">({{ projet.taches.count }})</span></h4>
+    {% if request.user == projet.createur %}
+    <a href="{% url 'tache_create' projet.pk %}" class="btn btn-primary btn-sm">
+        + Ajouter une tâche
+    </a>
+    {% endif %}
+</div>
+
+<div class="grid-3">
+{% for tache in taches %}
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <h6 style="font-weight:600;">{{ tache.titre }}</h6>
+            <span class="badge
+                {% if tache.statut == 'termine' %}badge-green
+                {% elif tache.statut == 'en_cours' %}badge-gold
+                {% else %}badge-gray{% endif %}">
+                {{ tache.get_statut_display }}
+            </span>
+                    <span style="
+            font-size:0.75rem; padding:2px 8px; border-radius:20px;
+            background: {% if tache.priorite == 'haute' %}#fff0f3{% elif tache.priorite == 'moyenne' %}#fff3e0{% else %}#e8f5e9{% endif %};
+            color: {% if tache.priorite == 'haute' %}#e05a7a{% elif tache.priorite == 'moyenne' %}#e08a00{% else %}#4caf50{% endif %};">
+            {% if tache.priorite == 'haute' %}🔴 Haute
+            {% elif tache.priorite == 'moyenne' %}🟡 Moyenne
+            {% else %}🟢 Basse{% endif %}
+        </span>
+        </div>
+        <p style="color:#bbb; font-size:0.85rem; margin-bottom:12px;">
+            {{ tache.description|truncatechars:60 }}
+        </p>
+        {% if tache.assignee %}
+        <small style="color:#c9547a; display:block; margin-bottom:8px;">
+            👤 {{ tache.assignee.username }}
+        </small>
+        {% endif %}
+        {% if tache.date_limite %}
+        <small style="color:#e08a00; display:block; margin-bottom:12px;">
+            ⏰ {{ tache.date_limite|date:"d/m/Y" }}
+        </small>
+        {% endif %}
+        {% if request.user == projet.createur %}
+        <div style="display:flex; gap:8px; margin-top:8px;">
+            <a href="{% url 'tache_edit' tache.pk %}" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit"></i>
+            </a>
+            <form method="POST" action="{% url 'tache_delete' tache.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+            <form method="POST" action="{% url 'tache_statut' tache.pk %}" style="flex:1;">
+                {% csrf_token %}
+                <select name="statut" style="width:100%;" onchange="this.form.submit()">
+                    <option value="todo" {% if tache.statut == 'todo' %}selected{% endif %}>À faire</option>
+                    <option value="en_cours" {% if tache.statut == 'en_cours' %}selected{% endif %}>En cours</option>
+                    <option value="termine" {% if tache.statut == 'termine' %}selected{% endif %}>Terminé</option>
+                </select>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1; text-align:center; padding:40px; color:#ccc;">
+        <div style="font-size:2.5rem; margin-bottom:12px;">📋</div>
+        <p>Aucune tâche pour ce projet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

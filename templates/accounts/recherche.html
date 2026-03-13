@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Recherche{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:32px;">
+    <h2 style="font-size:1.8rem; font-weight:700; color:#333; margin-bottom:16px;">
+        🔍 Recherche
+    </h2>
+    <form method="GET" action="{% url 'recherche' %}">
+        <div style="display:flex; gap:12px;">
+            <input type="text" name="q" value="{{ query }}"
+                placeholder="Rechercher un projet ou une tâche..."
+                style="flex:1; padding:12px 20px; border-radius:25px;
+                border:1.5px solid #fce8f0; outline:none; font-family:Poppins,sans-serif;
+                font-size:0.95rem;">
+            <button type="submit" class="btn btn-primary">
+                🔍 Rechercher
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if query %}
+<div style="margin-bottom:32px;">
+    <h4 style="font-weight:600; margin-bottom:16px;">
+        📁 Projets
+        <span style="color:#c9547a;">({{ projets.count }})</span>
+    </h4>
+    <div class="grid-3">
+        {% for projet in projets %}
+        <div class="card">
+            <h5 style="font-weight:600; margin-bottom:8px;">{{ projet.titre }}</h5>
+            <p style="color:#aaa; font-size:0.85rem; margin-bottom:16px;">
+                {{ projet.description|truncatechars:80 }}
+            </p>
+            <a href="{% url 'projet_detail' projet.pk %}" class="btn btn-outline btn-sm">
+                Voir →
+            </a>
+        </div>
+        {% empty %}
+        <div style="grid-column:1/-1; color:#ccc; text-align:center; padding:24px;">
+            Aucun projet trouvé.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div>
+    <h4 style="font-weight:600; margin-bottom:16px;">
+        📋 Tâches
+        <span style="color:#c9547a;">({{ taches.count }})</span>
+    </h4>
+    <div class="grid-3">
+        {% for tache in taches %}
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <h6 style="font-weight:600;">{{ tache.titre }}</h6>
+                <span style="
+                    font-size:0.75rem; padding:2px 8px; border-radius:20px;
+                    background:{% if tache.statut == 'termine' %}#e8f5e9{% elif tache.statut == 'en_cours' %}#fff3e0{% else %}#f0f0f0{% endif %};
+                    color:{% if tache.statut == 'termine' %}#4caf50{% elif tache.statut == 'en_cours' %}#e08a00{% else %}#888{% endif %};">
+                    {{ tache.get_statut_display }}
+                </span>
+            </div>
+            <p style="color:#aaa; font-size:0.85rem; margin-bottom:8px;">
+                {{ tache.description|truncatechars:60 }}
+            </p>
+            <small style="color:#c9547a;">
+                📁 {{ tache.projet.titre }}
+            </small><br>
+            <a href="{% url 'projet_detail' tache.projet.pk %}"
+                class="btn btn-outline btn-sm" style="margin-top:8px;">
+                Voir le projet →
+            </a>
+        </div>
+        {% empty %}
+        <div style="grid-column:1/-1; color:#ccc; text-align:center; padding:24px;">
+            Aucune tâche trouvée.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

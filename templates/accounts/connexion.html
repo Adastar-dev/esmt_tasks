@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-title">🌸 ESMT Tasks</div>
+        <p style="text-align:center; color:#aaa; font-size:0.85rem; margin-bottom:28px;">
+            Connectez-vous à votre espace
+        </p>
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Nom d'utilisateur</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; margin-top:8px;">
+                Se connecter
+            </button>
+        </form>
+        <p style="text-align:center; margin-top:20px; font-size:0.85rem; color:#aaa;">
+            Pas de compte ? <a href="{% url 'inscription' %}" style="color:#c9547a;">S'inscrire</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
